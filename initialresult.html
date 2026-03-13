@@ -33,11 +33,17 @@ padding:30px;
 border-radius:10px;
 box-shadow:0 5px 15px rgba(0,0,0,0.1);
 margin-top:20px;
+text-align:left;
 }
 
 .loading{
 font-size:18px;
 color:#DD0000;
+}
+
+#feedback{
+white-space:pre-line;
+line-height:1.6;
 }
 
 </style>
@@ -111,16 +117,20 @@ document.getElementById("thema").innerText =
 result["Thema"] || result["Thema der Präsentation"] || "";
 
 document.getElementById("feedback").innerText =
-result["KI-Analyse und Feedback"] || "";
+result["KI Analyse und Feedback"] ||
+result["KI-Analyse und Feedback"] ||
+result["Feedback"] ||
+"";
 
 document.getElementById("result").style.display = "block";
-
 status.style.display = "none";
 
 }else{
 
 status.innerText =
-"Die Analyse ist noch nicht verfügbar. Bitte versuchen Sie es später erneut.";
+"Analyse läuft noch... Seite wird automatisch aktualisiert.";
+
+setTimeout(fetchResults,5000);
 
 }
 
