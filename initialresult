@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<title>B1 Speaking Coach – Feedback</title>
+
+<style>
+
+body{
+font-family: Arial, sans-serif;
+background:#f5f5f5;
+margin:0;
+}
+
+header{
+background:#000;
+color:#FFCE00;
+padding:20px;
+text-align:center;
+font-size:24px;
+}
+
+.container{
+max-width:700px;
+margin:60px auto;
+padding:20px;
+text-align:center;
+}
+
+.card{
+background:white;
+padding:30px;
+border-radius:10px;
+box-shadow:0 5px 15px rgba(0,0,0,0.1);
+margin-top:20px;
+}
+
+.loading{
+font-size:18px;
+color:#DD0000;
+}
+
+</style>
+</head>
+
+<body>
+
+<header>
+B1 Speaking Coach
+</header>
+
+<div class="container">
+
+<h1>Ihr Feedback zur B1 Sprechen Präsentation</h1>
+
+<p id="status" class="loading">
+Analyse wird geladen...
+</p>
+
+<div id="result" class="card" style="display:none;">
+
+<h3 id="name"></h3>
+
+<p>
+<strong>Thema:</strong>
+<span id="thema"></span>
+</p>
+
+<h4>KI Analyse und Feedback</h4>
+
+<p id="feedback"></p>
+
+</div>
+
+</div>
+
+<script>
+
+const params = new URLSearchParams(window.location.search);
+const submissionId = params.get("submission_id");
+
+const sheetTranscript =
+"https://opensheet.elk.sh/1Q_19DamqDI5sTmJwNZreqIapyiIL-LpYdlaR2tLPUUI/Sheet1";
+
+const sheetAudio =
+"https://opensheet.elk.sh/1R-Lfx-9yDN9o2Gk8tl3VhdlOOLQNo0YnTFBQN9zD3iw/Sheet1";
+
+async function fetchResults(){
+
+const status = document.getElementById("status");
+
+try{
+
+const [data1,data2] = await Promise.all([
+fetch(sheetTranscript).then(r=>r.json()),
+fetch(sheetAudio).then(r=>r.json())
+]);
+
+const allData = data1.concat(data2);
+
+const result = allData.find(
+row => row["Submission ID"] === submissionId
+);
+
+if(result){
+
+document.getElementById("name").innerText =
+(result["Name"] || "") + " " + (result["Name - Nachname"] || "");
+
+document.getElementById("thema").innerText =
+result["Thema"] || result["Thema der Präsentation"] || "";
+
+document.getElementById("feedback").innerText =
+result["KI-Analyse und Feedback"] || "";
+
+document.getElementById("result").style.display = "block";
+
+status.style.display = "none";
+
+}else{
+
+status.innerText =
+"Die Analyse ist noch nicht verfügbar. Bitte versuchen Sie es später erneut.";
+
+}
+
+}catch(error){
+
+status.innerText = "Fehler beim Laden der Analyse.";
+
+}
+
+}
+
+fetchResults();
+
+</script>
+
+</body>
+</html>
