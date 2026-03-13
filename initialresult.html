@@ -230,36 +230,85 @@
 </div>
 </footer>
 <script>
-        window.onload = function() {
-            const params = new URLSearchParams(window.location.search);
-            const name = params.get('name');
-            const feedback = params.get('feedback');
-            const thema = params.get('thema');
 
-            if (name && feedback && thema) {
-                document.getElementById('name').innerText = name;
-                document.getElementById('thema').innerText = thema;
-                
-                // Formatiere das Feedback mit Absätzen für bessere Lesbarkeit
-                const formattedFeedback = feedback.split('\n').map(p => `<p class="mb-4">${p}</p>`).join('');
-                document.getElementById('feedback').innerHTML = formattedFeedback;
+const params = new URLSearchParams(window.location.search);
+const submissionId = params.get("submission_id");
 
-                // Kurze Verzögerung für den "Lade-Effekt"
-                setTimeout(() => {
-                    document.getElementById('status').classList.add('hidden');
-                    const resultCard = document.getElementById('result');
-                    resultCard.style.display = 'block';
-                }, 1500);
-            } else {
-                document.getElementById('status').innerHTML = `
-                    <div class="bg-error-container p-8 rounded-xl text-center space-y-4 max-w-md">
-                        <span class="material-symbols-outlined text-error text-5xl">warning</span>
-                        <h2 class="text-xl font-bold text-on-error-container">Keine Daten gefunden</h2>
-                        <p class="text-on-error-container/80">Es wurden keine Analyseergebnisse übermittelt. Bitte starten Sie eine neue Übung.</p>
-                        <a href="/" class="inline-block bg-primary text-on-primary px-6 py-2 rounded-full font-bold">Zurück zum Start</a>
-                    </div>
-                `;
-            }
-        };
-    </script>
+const sheetTranscript =
+"https://opensheet.elk.sh/1Q_19DamqDI5sTmJwNZreqIapyiIL-LpYdlaR2tLPUUI/Sheet1";
+
+const sheetAudio =
+"https://opensheet.elk.sh/1R-Lfx-9yDN9o2Gk8tl3VhdlOOLQNo0YnTFBQN9zD3iw/Sheet1";
+
+async function fetchResults(){
+
+const status = document.getElementById("status");
+
+try{
+
+const [data1,data2] = await Promise.all([
+fetch(sheetTranscript).then(r=>r.json()),
+fetch(sheetAudio).then(r=>r.json())
+]);
+
+const allData = data1.concat(data2);
+
+const result = allData.find(
+row => row["Submission ID"] === submissionId
+);
+
+if(result){
+
+document.getElementById("name").innerText =
+(result["Name"] || "") + " " + (result["Name - Nachname"] || "");
+
+document.getElementById("thema").innerText =
+result["Thema"] || result["Thema der Präsentation"] || "";
+
+const feedbackText =
+result["KI Analyse und Feedback"] ||
+result["KI-Analyse und Feedback"] ||
+result["Feedback"] ||
+"";
+
+const formattedFeedback =
+feedbackText.split("\n").map(p => `<p class="mb-4">${p}</p>`).join("");
+
+document.getElementById("feedback").innerHTML = formattedFeedback;
+
+setTimeout(() => {
+
+document.getElementById("status").classList.add("hidden");
+document.getElementById("result").classList.remove("hidden");
+
+},1200);
+
+}else{
+
+status.innerHTML = `
+<div class="text-center space-y-4">
+<span class="material-symbols-outlined text-primary text-5xl animate-spin">psychology</span>
+<p class="text-on-surface/70">Analyse läuft noch... Seite wird automatisch aktualisiert.</p>
+</div>
+`;
+
+setTimeout(fetchResults,5000);
+
+}
+
+}catch(error){
+
+status.innerHTML = `
+<div class="text-center text-error">
+Fehler beim Laden der Analyse.
+</div>
+`;
+
+}
+
+}
+
+fetchResults();
+
+</script>
 </body></html>
